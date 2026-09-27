@@ -16,13 +16,13 @@
    ====================================================================== */
 
 const firebaseConfig = {
-  apiKey: "PEGA_AQUI_TU_API_KEY",
-  authDomain: "PEGA_AQUI_TU_PROYECTO.firebaseapp.com",
-  databaseURL: "https://PEGA_AQUI_TU_PROYECTO-default-rtdb.firebaseio.com",
-  projectId: "PEGA_AQUI_TU_PROYECTO",
-  storageBucket: "PEGA_AQUI_TU_PROYECTO.appspot.com",
-  messagingSenderId: "000000000000",
-  appId: "1:000000000000:web:0000000000000000000000"
+  apiKey: "AIzaSyAaeei8WdkeRgLoBzTFkS5KAryqmMxnaZ0",
+  authDomain: "batalla-matrices.firebaseapp.com",
+  databaseURL: "https://batalla-matrices-default-rtdb.firebaseio.com",
+  projectId: "batalla-matrices",
+  storageBucket: "batalla-matrices.firebasestorage.app",
+  messagingSenderId: "947798119894",
+  appId: "1:947798119894:web:d438b9517e863ab4e2c077"
 };
 
 firebase.initializeApp(firebaseConfig);
