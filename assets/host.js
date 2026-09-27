@@ -217,6 +217,39 @@ return '<div class="boss-mini" id="bossStage">' +
       '</div>' +
       (revealed? '<p class="muted" style="max-width:56ch; margin:14px auto 0; font-size:13px; text-align:left;">'+esc2(q.explain)+'</p>' : '') +
       '<div class="presenter-options">'+optsHTML+'</div>' +
+      answeredRosterHTML(r, idx, revealed) +
+    '</div>';
+  }
+
+  // Quién ya respondió la pregunta actual — para que el profesor sepa si debe esperar o puede avanzar.
+  function answeredRosterHTML(r, idx, revealed){
+    var players = r.players || {};
+    var answers = (r.answers && r.answers[idx]) || {};
+    var ids = Object.keys(players);
+    if(!ids.length) return '';
+    // conectados primero, y dentro de cada grupo los que faltan por responder primero (para verlos de un vistazo)
+    ids.sort(function(a,b){
+      var pa=players[a], pb=players[b];
+      var da = pa.connected===false?1:0, db_ = pb.connected===false?1:0;
+      if(da!==db_) return da-db_;
+      var aa = answers[a]?1:0, ab = answers[b]?1:0;
+      if(aa!==ab) return aa-ab;
+      return (pa.name||"").localeCompare(pb.name||"");
+    });
+    return '<div class="card tight" style="margin-top:16px;">' +
+      '<div class="eyebrow">'+(revealed? '¿Quién respondió?' : '¿Quién falta por responder?')+'</div>' +
+      '<div class="roster-grid" style="margin-top:10px;">' +
+        ids.map(function(id){
+          var p = players[id];
+          var answered = !!answers[id];
+          var offline = p.connected===false;
+          return '<div class="roster-chip'+(offline?' offline':'')+(answered?' answered':'')+'">' +
+            '<div class="av">'+p.avatar+'</div>' +
+            '<div class="nm">'+esc2(p.name)+'</div>' +
+            '<div class="roster-status">'+(offline? '⚪ desconectado' : (answered? '✅ listo' : '⏳ pensando…'))+'</div>' +
+          '</div>';
+        }).join('') +
+      '</div>' +
     '</div>';
   }
 

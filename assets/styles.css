@@ -226,9 +226,9 @@ input.code-input{
 }
 .arena-inner{position:relative; z-index:1; width:100%; max-width:420px; display:flex; flex-direction:column; align-items:center; gap:14px;}
 .arena-name{font-family:var(--font-display); font-size:26px; letter-spacing:1.5px; text-transform:uppercase; text-shadow:0 2px 12px rgba(0,0,0,.6);}
-.boss-stage{position:relative; height:180px; display:grid; place-items:center; width:100%;}
+.boss-stage{position:relative; height:250px; display:grid; place-items:center; width:100%;}
 .boss-sprite{
-  image-rendering:pixelated; image-rendering:crisp-edges; height:160px; width:auto;
+  image-rendering:pixelated; image-rendering:crisp-edges; height:230px; width:auto;
   filter:drop-shadow(0 18px 24px rgba(0,0,0,.55));
   transition:transform .12s ease;
 }
@@ -255,9 +255,10 @@ input.code-input{
   border-radius:14px; padding:10px 14px; margin-bottom:14px;
 }
 .boss-sprite-mini{
-  height:52px; width:auto; flex-shrink:0; image-rendering:pixelated; image-rendering:crisp-edges;
-  filter:drop-shadow(0 6px 10px rgba(0,0,0,.5)); transition:transform .12s ease;
+  height:108px; width:auto; flex-shrink:0; image-rendering:pixelated; image-rendering:crisp-edges;
+  filter:drop-shadow(0 8px 14px rgba(0,0,0,.55)); transition:transform .12s ease;
 }
+@media (max-width:520px){ .boss-sprite-mini{ height:84px; } }
 .boss-mini.hit .boss-sprite-mini{animation:bossHit .35s ease;}
 .boss-mini.shake{animation:arenaShake .35s ease;}
 .boss-mini-body{flex:1; min-width:0;}
@@ -276,6 +277,9 @@ input.code-input{
 .roster-chip .av{font-size:24px;}
 .roster-chip .nm{font-size:12.5px; font-weight:700; margin-top:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
 .roster-chip.offline{opacity:.35;}
+.roster-chip.answered{border-color:var(--good); background:rgba(61,220,132,.1);}
+.roster-status{font-size:10.5px; color:var(--muted); margin-top:3px; font-family:var(--font-mono);}
+.roster-chip.answered .roster-status{color:var(--good);}
 
 .leader-row{display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid var(--line-soft);}
 .leader-row:last-child{border-bottom:none;}
@@ -285,6 +289,7 @@ input.code-input{
 .leader-bar-bg{flex:2; height:8px; border-radius:999px; background:var(--surface2); overflow:hidden; min-width:60px;}
 .leader-bar{height:100%; background:linear-gradient(90deg, var(--red), var(--gold)); border-radius:999px; transition:width .4s;}
 .leader-score{font-family:var(--font-mono); font-weight:700; width:64px; text-align:right;}
+.leader-row.mine{background:var(--surface2); border-radius:10px; padding-left:8px; padding-right:8px; border-bottom-color:transparent;}
 
 .podium3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; align-items:end; margin:20px 0;}
 .podium-col{text-align:center;}
