@@ -10,9 +10,7 @@
   // ---- El jefe final: cada nivel tiene su propia bestia ----
   // Sprites CC0 de Kenney Vleugels (kenney.nl) — ver assets/boss/LICENSE-sprites.txt
   global.BOSSES = {
-    lava:   { name:"El Sarrus, Serpiente Determinante", normal:"assets/boss/snakeLava.png",  hit:"assets/boss/snakeLava_hit.png",  dead:"assets/boss/snakeLava_dead.png",  hp:1200 },
-    spider: { name:"Aracne, Guardiana del Producto",    normal:"assets/boss/spider.png",      hit:"assets/boss/spider_hit.png",      dead:"assets/boss/spider_dead.png",      hp:1200 },
-    ghost:  { name:"El Espectro de la Inversa",         normal:"assets/boss/ghost.png",       hit:"assets/boss/ghost_hit.png",       dead:"assets/boss/ghost_dead.png",       hp:1200 }
+    matriz: { name:"El Guardián de la Matriz", normal:"assets/boss/boss_normal.webp", hit:"assets/boss/boss_hit.webp", dead:"assets/boss/boss_dead.webp", hp:1200 }
   };
   global.DAMAGE_PER_CORRECT = { bronce:60, plata:100, oro:160 };
 

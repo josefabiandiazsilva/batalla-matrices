@@ -18,36 +18,43 @@
 
   function esc2(s){ return esc(s); }
 
+  function diagnosticCardHTML(){
+    if(window.FIREBASE_CONFIGURED===false){
+      return '<div class="card">' +
+        '<div class="eyebrow">Falta configurar el servidor</div>' +
+        '<p style="margin-top:10px;">Este sitio todavía no tiene conectado un proyecto de Firebase. Abre <code>assets/firebase-config.js</code> y pega las credenciales de tu proyecto gratuito (ver README.md).</p>' +
+      '</div>';
+    }
+    return '<div class="card">' +
+      '<div class="eyebrow">No se pudo conectar con Firebase</div>' +
+      '<p style="margin-top:10px;">Las credenciales están puestas, pero la conexión falló. Causas más frecuentes:</p>' +
+      '<ul style="margin-top:8px; padding-left:20px; color:var(--muted); font-size:13.5px; display:flex; flex-direction:column; gap:6px;">' +
+        '<li>Todavía no creaste la <b style="color:var(--text)">Realtime Database</b> en la consola de Firebase (Compilación → Realtime Database → Crear base de datos). Tener el proyecto creado no es suficiente, la base de datos es un paso aparte.</li>' +
+        '<li>El <code>databaseURL</code> tiene un error de tipeo (debe empezar con <code>https://</code> y terminar en <code>.firebaseio.com</code>).</li>' +
+        '<li>Las reglas de la base de datos aún no se publicaron (pestaña "Reglas" → pegar <code>database.rules.json</code> → Publicar).</li>' +
+        '<li>Estás viendo una versión en caché de esta página: recarga con Ctrl+Shift+R (o Cmd+Shift+R en Mac).</li>' +
+      '</ul>' +
+      (window.FIREBASE_ERROR? '<div class="share-box" style="margin-top:12px;">Detalle técnico: '+esc2(window.FIREBASE_ERROR)+'</div>' : '') +
+    '</div>';
+  }
+
   /* ================= SETUP SCREEN ================= */
   function renderSetup(){
     if(!window.db || window.FIREBASE_CONFIGURED===false){
-      hostRoot.innerHTML = '<div class="card">' +
-        '<div class="eyebrow">Falta configurar el servidor</div>' +
-        '<p style="margin-top:10px;">Este sitio todavía no tiene conectado un proyecto de Firebase. Abre <code>assets/firebase-config.js</code> y pega las credenciales de tu proyecto gratuito (ver README.md). Sin eso, la sala no puede sincronizar nada entre dispositivos.</p>' +
-      '</div>';
+      hostRoot.innerHTML = diagnosticCardHTML();
       return;
     }
-    var bossKeys = Object.keys(BOSSES);
-    hostRoot.innerHTML = '<div class="card" style="max-width:520px;">' +
+    var bossKey = Object.keys(BOSSES)[0];
+    var boss = BOSSES[bossKey];
+    hostRoot.innerHTML = '<div class="card center" style="max-width:520px;">' +
       '<div class="eyebrow">Nueva sesión de clase</div>' +
-      '<h2 style="font-size:22px; margin-top:8px;">Elige al jefe de hoy</h2>' +
-      '<div class="avatar-grid" id="bossPicker" style="grid-template-columns:repeat(3,1fr);">' +
-        bossKeys.map(function(k,i){
-          var b = BOSSES[k];
-          return '<button type="button" class="avatar-opt boss-opt'+(i===0?' sel':'')+'" data-k="'+k+'" style="aspect-ratio:auto; height:auto; padding:10px 6px; flex-direction:column; display:flex; gap:4px;">' +
-            '<img src="'+b.normal+'" style="height:46px; image-rendering:pixelated;"><span style="font-size:10px; color:var(--muted);">'+esc2(b.name.split(",")[0])+'</span></button>';
-        }).join('') +
-      '</div>' +
+      '<h2 style="font-size:22px; margin-top:8px;">El jefe de hoy</h2>' +
+      '<img src="'+boss.normal+'" alt="jefe" style="height:180px; margin:14px auto; display:block; filter:drop-shadow(0 14px 18px rgba(0,0,0,.5));">' +
+      '<div style="font-family:var(--font-display); font-size:18px; letter-spacing:1px; text-transform:uppercase;">'+esc2(boss.name)+'</div>' +
       '<button class="btn btn-primary btn-block" id="createBtn" style="margin-top:20px;">Crear sala →</button>' +
     '</div>';
 
-    var selectedBoss = bossKeys[0];
-    document.getElementById("bossPicker").addEventListener("click", function(e){
-      var b = e.target.closest(".boss-opt"); if(!b) return;
-      selectedBoss = b.dataset.k;
-      hostRoot.querySelectorAll(".boss-opt").forEach(function(x){ x.classList.toggle("sel", x===b); });
-    });
-    document.getElementById("createBtn").addEventListener("click", function(){ createRoom(selectedBoss); });
+    document.getElementById("createBtn").addEventListener("click", function(){ createRoom(bossKey); });
   }
 
   function createRoom(bossKey){
@@ -147,7 +154,21 @@
     });
   }
 
-  /* ================= PRESENTER TAB ================= */
+  /* ================= boss mini widget (visible durante la pregunta, no solo en la pestaña de marcador) ================= */
+function bossMiniHTML(boss){
+if(!boss) return '';
+var pct = clamp((boss.hp/boss.maxHp)*100,0,100);
+var defeated = boss.hp<=0;
+return '<div class="boss-mini" id="bossStage">' +
+'<img class="boss-sprite-mini" id="bossImg" src="'+(defeated? boss.deadImg : boss.img)+'" alt="jefe">' +
+'<div class="boss-mini-body">' +
+'<div class="boss-mini-name">'+esc2(boss.name||"")+'</div>' +
+'<div class="hp-bar-bg mini"><div class="hp-bar" style="width:'+pct+'%"></div></div>' +
+'</div>' +
+'</div>';
+}
+
+/* ================= PRESENTER TAB ================= */
   function currentDeadlineInfo(){
     var t = host.room.timer || {};
     if(!t) return {msLeft:0, paused:false, duration:20};
@@ -180,6 +201,7 @@
     var low = !revealed && info.msLeft < info.duration*1000*0.25;
 
     return '<div class="presenter-stage">' +
+      bossMiniHTML(r.boss) +
       '<div class="presenter-num">Pregunta '+(idx+1)+' de '+QUESTIONS.length+' &middot; '+TIER_LABEL[q.tier]+' &middot; '+q.points+' pts &middot; '+answeredCount+'/'+playerCount+' respondieron</div>' +
       '<h3 style="font-size:22px; max-width:60ch; margin-inline:auto;">'+esc2(q.title)+'</h3>' +
       (q.matrixQuestion? '<div style="display:flex; justify-content:center;">'+matrixQuestionHTML(q.matrixQuestion)+'</div>' : '') +

@@ -40,7 +40,7 @@
   var state = {
     roomCode:"", playerId:null, name:"", avatar:chosenAvatar,
     room:null, lastIndex:-1, lastStatus:null,
-    timerTickId:null
+    timerTickId:null, lastBossHp:null
   };
 
   function saveIdentity(){
@@ -56,7 +56,8 @@
 
   function attemptJoin(){
     if(!window.db || window.FIREBASE_CONFIGURED===false){
-      showJoinError("El profesor todavía no ha configurado el servidor del juego (falta la conexión a Firebase).");
+      var extra = window.FIREBASE_ERROR ? (" Detalle: "+window.FIREBASE_ERROR) : "";
+      showJoinError("El profesor todavía no ha configurado el servidor del juego (falta la conexión a Firebase)."+extra);
       return;
     }
     var code = codeInput.value.trim().replace(/\s+/g,"");
@@ -108,6 +109,7 @@
       if(!val){ renderClosed(); return; }
       state.room = val;
       renderByStatus();
+      syncBossMini();
     }, function(){ renderClosed(); });
   }
 
@@ -142,6 +144,49 @@
       '<img src="'+img+'" alt="jefe" style="height:'+(compact?54:74)+'px; image-rendering:pixelated; margin:0 auto 8px;">' +
       '<div class="hp-bar-bg"><div class="hp-bar" style="width:'+pct+'%"></div></div>' +
     '</div>';
+  }
+
+  // Widget compacto y persistente del jefe: vive dentro de la pregunta activa (no solo antes/después),
+  // porque es justo mientras se responde cuando la clase le está haciendo daño en tiempo real.
+  function bossMiniHTML(){
+    var r = state.room;
+    if(!r || !r.boss) return "";
+    var pct = clamp((r.boss.hp / r.boss.maxHp) * 100, 0, 100);
+    var defeated = r.boss.hp<=0;
+    return '<div class="boss-mini" id="bossMiniStage">' +
+      '<img class="boss-sprite-mini" id="bossMiniImg" src="'+(defeated? r.boss.deadImg : r.boss.img)+'" alt="jefe">' +
+      '<div class="boss-mini-body">' +
+        '<div class="boss-mini-name">'+esc(r.boss.name||"")+'</div>' +
+        '<div class="hp-bar-bg mini"><div class="hp-bar" id="bossMiniBar" style="width:'+pct+'%"></div></div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  // Actualiza el widget compacto sin re-renderizar toda la pantalla (para no perder el estado de
+  // "ya respondí" ni cortar el temporizador), y dispara la animación de golpe si el HP bajó.
+  function syncBossMini(){
+    var r = state.room;
+    if(!r || !r.boss) return;
+    var stage = document.getElementById("bossMiniStage");
+    var img = document.getElementById("bossMiniImg");
+    var bar = document.getElementById("bossMiniBar");
+    if(!stage || !img || !bar){ state.lastBossHp = r.boss.hp; return; }
+    var pct = clamp((r.boss.hp / r.boss.maxHp) * 100, 0, 100);
+    var defeated = r.boss.hp<=0;
+    var finalSrc = defeated ? r.boss.deadImg : r.boss.img;
+    bar.style.width = pct+"%";
+    if(state.lastBossHp!=null && r.boss.hp < state.lastBossHp){
+      img.src = r.boss.hitImg;
+      stage.classList.add("hit","shake");
+      beep(180,.1,"square");
+      setTimeout(function(){
+        stage.classList.remove("hit","shake");
+        if(img.isConnected) img.src = finalSrc;
+      }, 420);
+    } else if(img.getAttribute("src") !== finalSrc){
+      img.src = finalSrc;
+    }
+    state.lastBossHp = r.boss.hp;
   }
 
   function renderWaiting(){
@@ -196,6 +241,7 @@
     }).join('');
 
     playRoot.innerHTML = '<div class="wrap-narrow">' +
+      bossMiniHTML() +
       scorebarHTML() + progressDots() +
       '<div class="card">' +
         '<div class="q-head">'+tierChip(q.tier)+'<span class="muted" style="font-family:var(--font-mono); font-size:12.5px;">'+q.points+' pts base</span></div>' +
