@@ -103,11 +103,55 @@
     });
   }
 
+  // Oculta la pantalla de bienvenida (código+nombre, hero, niveles) directamente por código, sin
+  // depender de la regla CSS: así funciona aunque el navegador tenga en caché una hoja de estilos vieja.
+  function hideMarketingChrome(){
+    document.body.classList.add("in-game");
+    var navEl = document.querySelector(".nav"); if(navEl) navEl.style.display = "none";
+    var joinSectionEl = document.getElementById("joinSection"); if(joinSectionEl) joinSectionEl.style.display = "none";
+    var heroEl = document.querySelector(".hero"); if(heroEl) heroEl.style.display = "none";
+    document.querySelectorAll(".section").forEach(function(s){ s.style.display = "none"; });
+    var footerEl = document.querySelector("body > .footer"); if(footerEl) footerEl.style.display = "none";
+    ensureLeaveButton();
+  }
+
+  // Botón fijo "Salir": sin esto, un estudiante que entró a una sala vieja que el profesor nunca
+  // cerró (o a la que se conectó por error) queda atrapado ahí para siempre, sin ninguna forma de
+  // volver a la pantalla de código+nombre. Vive fuera de playRoot para sobrevivir cualquier re-render.
+  function ensureLeaveButton(){
+    var btn = document.getElementById("leaveRoomBtn");
+    if(!btn){
+      btn = document.createElement("button");
+      btn.id = "leaveRoomBtn";
+      btn.type = "button";
+      btn.className = "leave-room-btn";
+      btn.textContent = "↩ Salir de la sala";
+      btn.addEventListener("click", leaveRoom);
+      document.body.appendChild(btn);
+    }
+    btn.style.display = "block";
+  }
+
+  function leaveRoom(){
+    if(!confirm("¿Salir de esta sala y volver a la pantalla de inicio? Puedes volver a entrar con un código en cualquier momento.")) return;
+    try{
+      if(state.roomCode && state.playerId){
+        db.ref("rooms/"+state.roomCode+"/players/"+state.playerId).update({connected:false});
+      }
+    }catch(e){}
+    try{ if(state.roomCode) db.ref("rooms/"+state.roomCode).off(); }catch(e){}
+    clearInterval(state.timerTickId);
+    lsSet("bm_room",""); lsSet("bm_pid",null);
+    state.roomCode = ""; state.playerId = null; state.room = null;
+    state.lastIndex = -1; state.lastStatus = null; answeredForIndex = -1;
+    backToJoinScreen("");
+  }
+
   // Si el estudiante ya se identificó antes en esta sala (mismo código guardado), la pantalla de
   // "código + nombre" no se debe volver a mostrar: entra directo al juego, como en cualquier app con sesión.
   function attemptAutoRejoin(){
     if(!window.db || window.FIREBASE_CONFIGURED===false) return;
-    document.body.classList.add("in-game");
+    hideMarketingChrome();
     playRoot.innerHTML = '<div class="wrap-narrow"><div class="card center">' +
       '<div style="font-size:40px;">'+chosenAvatar+'</div>' +
       '<p class="muted pulse" style="margin-top:14px;">Reconectando a tu partida…</p>' +
@@ -126,13 +170,18 @@
 
   function backToJoinScreen(msg){
     document.body.classList.remove("in-game");
+    var navEl = document.querySelector(".nav"); if(navEl) navEl.style.display = "";
+    var joinSectionEl = document.getElementById("joinSection"); if(joinSectionEl) joinSectionEl.style.display = "";
+    var heroEl = document.querySelector(".hero"); if(heroEl) heroEl.style.display = "";
+    document.querySelectorAll(".section").forEach(function(s){ s.style.display = ""; });
+    var footerEl = document.querySelector("body > .footer"); if(footerEl) footerEl.style.display = "";
+    var leaveBtn = document.getElementById("leaveRoomBtn"); if(leaveBtn) leaveBtn.style.display = "none";
     playRoot.innerHTML = "";
     showJoinError(msg);
   }
 
   function enterGame(){
-    document.body.classList.add("in-game");
-    document.querySelector(".nav").style.display = "none";
+    hideMarketingChrome();
     var roomRef = db.ref("rooms/"+state.roomCode);
     roomRef.on("value", function(snap){
       var val = snap.val();
