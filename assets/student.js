@@ -30,6 +30,7 @@
   var prevName = lsGet("bm_name","");
   if(prevCode) codeInput.value = prevCode;
   if(prevName) nameInput.value = prevName;
+  var prevPid = lsGet("bm_pid", null);
 
   var serverOffset = 0;
   if(window.db){
@@ -53,6 +54,8 @@
   [codeInput, nameInput].forEach(function(el){
     el.addEventListener("keydown", function(e){ if(e.key==="Enter") attemptJoin(); });
   });
+
+  if(prevCode && prevName && prevPid){ attemptAutoRejoin(); }
 
   function attemptJoin(){
     if(!window.db || window.FIREBASE_CONFIGURED===false){
@@ -98,6 +101,33 @@
       showJoinError("No se pudo conectar. Revisa tu conexión a internet e inténtalo de nuevo.");
       joinBtn.disabled = false; joinBtn.textContent = "Entrar a la sala →";
     });
+  }
+
+  // Si el estudiante ya se identificó antes en esta sala (mismo código guardado), la pantalla de
+  // "código + nombre" no se debe volver a mostrar: entra directo al juego, como en cualquier app con sesión.
+  function attemptAutoRejoin(){
+    if(!window.db || window.FIREBASE_CONFIGURED===false) return;
+    document.body.classList.add("in-game");
+    playRoot.innerHTML = '<div class="wrap-narrow"><div class="card center">' +
+      '<div style="font-size:40px;">'+chosenAvatar+'</div>' +
+      '<p class="muted pulse" style="margin-top:14px;">Reconectando a tu partida…</p>' +
+    '</div></div>';
+
+    db.ref("rooms/"+prevCode).get().then(function(snap){
+      if(!snap.exists()){ backToJoinScreen("Tu sala anterior ya no existe. Ingresa el código otra vez."); return; }
+      state.roomCode = prevCode; state.name = prevName; state.avatar = chosenAvatar; state.playerId = prevPid;
+      var playerRef = db.ref("rooms/"+prevCode+"/players/"+prevPid);
+      playerRef.update({ connected:true, name:prevName, avatar:chosenAvatar }).then(function(){
+        try{ playerRef.onDisconnect().update({connected:false}); }catch(e){}
+        enterGame();
+      }).catch(function(){ backToJoinScreen("No se pudo reconectar. Ingresa de nuevo."); });
+    }).catch(function(){ backToJoinScreen("No se pudo conectar. Revisa tu internet e inténtalo de nuevo."); });
+  }
+
+  function backToJoinScreen(msg){
+    document.body.classList.remove("in-game");
+    playRoot.innerHTML = "";
+    showJoinError(msg);
   }
 
   function enterGame(){
@@ -343,6 +373,31 @@
     wrap.appendChild(note);
   }
 
+  // Ranking en vivo, visible para el estudiante (no solo al final): top 5 + su propia posición si no entra en el top.
+  function miniLeaderboardHTML(){
+    var players = state.room.players || {};
+    var ids = Object.keys(players);
+    if(!ids.length) return '';
+    var sorted = ids.map(function(id){ return Object.assign({id:id}, players[id]); })
+      .sort(function(a,b){ return (b.score||0)-(a.score||0); });
+    var top = sorted.slice(0,5);
+    var myIndex = sorted.findIndex(function(p){ return p.id===state.playerId; });
+    function row(p,i){
+      var mine = p.id===state.playerId;
+      return '<div class="leader-row'+(mine?' mine':'')+'">' +
+        '<div class="leader-rank">'+(i+1)+'</div>' +
+        '<div class="leader-avatar">'+(p.avatar||"🧮")+'</div>' +
+        '<div class="leader-name">'+esc(p.name)+(mine?' <span class="muted" style="font-size:11px;">(tú)</span>':'')+'</div>' +
+        '<div class="leader-score">'+(p.score||0)+'</div>' +
+      '</div>';
+    }
+    return '<div class="card tight" style="margin-bottom:14px;">' +
+      '<div class="eyebrow" style="margin-bottom:8px;">Ranking en vivo</div>' +
+      top.map(function(p,i){ return row(p,i); }).join('') +
+      (myIndex>=5? '<hr class="div">'+row(sorted[myIndex],myIndex) : '') +
+    '</div>';
+  }
+
   function renderReveal(){
     clearInterval(state.timerTickId);
     var idx = state.room.currentIndex;
@@ -365,6 +420,7 @@
     playRoot.innerHTML = '<div class="wrap-narrow">' +
       bossWidget(true) +
       scorebarHTML() + progressDots() +
+      miniLeaderboardHTML() +
       '<div class="card">' +
         '<div class="q-head">'+tierChip(q.tier)+'</div>' +
         '<div class="q-title">'+esc(q.title)+'</div>' +
