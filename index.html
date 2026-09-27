@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Batalla de Matrices</title>
+<meta name="description" content="Juego en vivo por sala y código para la Unidad 1 de Álgebra Superior (UTS Virtual): matrices, determinantes e inversa.">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="logo"><b>MATRIZ</b>BATTLE</div>
+  <div class="nav-links">
+    <a href="profesor.html">Panel del profesor →</a>
+  </div>
+</nav>
+
+<header class="hero" style="background-image:url('https://images.unsplash.com/photo-1759210479316-7b6ea0fc7856?auto=format&fit=crop&w=1800&q=70');">
+  <div class="hero-content">
+    <div class="eyebrow">Unidad 1 · Álgebra Superior · UTS Virtual</div>
+    <h1>Batalla de <span>Matrices</span></h1>
+    <p class="lede">Entra con el código que tu profesor está proyectando, responde preguntas de matrices contra el reloj y ayuda a tu clase a derrotar al jefe final. Sin cuentas, sin instalaciones — solo tu nombre.</p>
+  </div>
+</header>
+
+<section class="wrap-narrow" style="margin-top:-64px; position:relative; z-index:2;">
+  <div class="card" id="joinCard">
+    <div class="eyebrow" style="margin-bottom:10px;">Unirse a la partida</div>
+    <label class="field-label" for="codeInput">Código de sala</label>
+    <input type="text" id="codeInput" class="code-input" maxlength="8" inputmode="numeric" placeholder="000000" autocomplete="off">
+    <div style="margin-top:16px;">
+      <label class="field-label" for="nameInput">Tu nombre</label>
+      <input type="text" id="nameInput" maxlength="24" placeholder="Ej: Camila R." autocomplete="off">
+    </div>
+    <div style="margin-top:16px;">
+      <label class="field-label">Elige tu avatar</label>
+      <div class="avatar-grid" id="avatarGrid"></div>
+    </div>
+    <div class="error-text" id="joinError"></div>
+    <button class="btn btn-primary btn-block" id="joinBtn" style="margin-top:16px;">Entrar a la sala →</button>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-head">
+    <h2>Niveles del reto</h2>
+    <span class="muted">12 preguntas · 3 dificultades</span>
+  </div>
+  <div class="row-scroll">
+    <div class="tier-card bronce">
+      <span class="tag">NIVEL 1</span>
+      <h3>🥉 Bronce</h3>
+      <p class="muted" style="font-size:13px;">Conceptos y tipos de matrices · 100 pts c/u</p>
+    </div>
+    <div class="tier-card plata">
+      <span class="tag">NIVEL 2</span>
+      <h3>🥈 Plata</h3>
+      <p class="muted" style="font-size:13px;">Suma, escalar, transpuesta y dimensiones · 200 pts c/u</p>
+    </div>
+    <div class="tier-card oro">
+      <span class="tag">NIVEL 3</span>
+      <h3>🥇 Oro</h3>
+      <p class="muted" style="font-size:13px;">Producto matricial, determinantes e inversa · 300 pts c/u</p>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  Actividad creada para Álgebra Superior · UTS Virtual. Sprite del jefe final: Kenney Vleugels (kenney.nl), licencia CC0.
+  Fotografía de portada: Claudio Guglieri en Unsplash.
+</footer>
+
+<div id="playRoot"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-database-compat.js"></script>
+<script src="assets/firebase-config.js"></script>
+<script src="assets/questions.js"></script>
+<script src="assets/common.js"></script>
+<script src="assets/student.js"></script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+{
+  "rules": {
+    "rooms": {
+      "$roomCode": {
+        ".read": true,
+        ".write": "!data.exists() || (newData.exists())",
+        ".validate": "$roomCode.matches(/^[0-9]{4,8}$/)",
+        "players": {
+          "$playerId": {
+            ".validate": "newData.hasChild('name')"
+          }
+        }
+      }
+    },
+    ".read": false,
+    ".write": false
+  }
+}

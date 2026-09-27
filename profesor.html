@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Batalla de Matrices — Profesor</title>
+<meta name="description" content="Panel del profesor: crea la sala, proyecta el código, controla el tiempo y observa el marcador y la arena del jefe en vivo.">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="logo"><b>MATRIZ</b>BATTLE <span class="muted" style="font-size:12px; font-family:var(--font-body); font-weight:600; margin-left:8px;">· panel del profesor</span></div>
+  <div class="nav-links">
+    <a href="index.html">Vista de estudiante →</a>
+  </div>
+</nav>
+
+<header class="hero" style="min-height:52vh; background-image:url('https://images.unsplash.com/photo-1751200065697-4461cc2b43cb?auto=format&fit=crop&w=1800&q=70');">
+  <div class="hero-content">
+    <div class="eyebrow">Modo profesor · no compartas esta URL</div>
+    <h1>Sala de <span>control</span></h1>
+    <p class="lede">Crea una sala nueva, proyecta el código en tu videollamada y controla el ritmo del juego: el tiempo, la revelación de respuestas y el jefe final que tu clase enfrenta juntos.</p>
+  </div>
+</header>
+
+<section class="wrap" style="margin-top:-40px; position:relative; z-index:2;">
+  <div id="hostRoot"></div>
+</section>
+
+<footer class="footer">
+  Sprite del jefe final: Kenney Vleugels (kenney.nl), licencia CC0. Fotografías: Claudio Guglieri, Zoshua Colah y Timur Kozmenko en Unsplash.
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-database-compat.js"></script>
+<script src="assets/firebase-config.js"></script>
+<script src="assets/questions.js"></script>
+<script src="assets/common.js"></script>
+<script src="assets/host.js"></script>
+</body>
+</html>
